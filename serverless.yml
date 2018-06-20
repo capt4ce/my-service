@@ -36,10 +36,10 @@ functions:
           path: telemetry
           method: get
   addtable:
-    handler: dynamodb-addtable.handler
+    handler: dynamodb-tableadd.handler
     events:
       - http:
-          path: addtable
+          path: tableadd
           method: get
   flusha:
     handler: flusha.handler
