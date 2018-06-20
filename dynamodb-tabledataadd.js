@@ -33,7 +33,8 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 200,
             body: JSON.stringify({
-                message: `News of "${event.queryStringParameters.title}" on the ${params.TableName} table successfully added with timestamp ${now}.`,
+                message: `News of "${params.Item.title}" on the ${params.TableName} table successfully added with timestamp ${now}.`,
+                content: params.Item.content,
             }),
         }
     } catch(err) {

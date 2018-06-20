@@ -33,7 +33,7 @@ functions:
     handler: telemetry-addnode.handler
     events:
       - http:
-          path: telemetry
+          path: addnode
           method: get
   tableadd:
     handler: dynamodb-tableadd.handler
