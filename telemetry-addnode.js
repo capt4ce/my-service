@@ -38,7 +38,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 statusCode: 400,
                 error: "Bad Request",
-                message: "Wrong request syntax; must have cpuUsage, tcpConn, and macHash.",
+                message: "Wrong request syntax.",
             }),
         }
     }
