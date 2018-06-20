@@ -39,7 +39,7 @@ exports.handler = async (event, context) => {
     };
 
     try {
-        const addTable = await dynamoDB.createTable(params).promise();
+        await dynamoDB.createTable(params).promise();
         return {
             statusCode: 200,
             body: JSON.stringify({

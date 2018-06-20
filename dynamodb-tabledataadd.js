@@ -23,18 +23,20 @@ exports.handler = async (event, context) => {
             "dateFloor": Math.floor(now / 850000000),
             "dateExact": now,
             "tag": event.queryStringParameters.tag || [],         // diharapkan keluaran array, protection available
-            "title": event.queryStringParameters.title,
-            "content": event.queryStringParameters.content,
-            "image": event.queryStringParameters.image || "",     
+            "info": {
+                "title": event.queryStringParameters.title,
+                "content": event.queryStringParameters.content,
+                "image": event.queryStringParameters.image || "",  
+            }   
         }
     }
     try {
-        const addData = await docClient.put(params).promise();
+        await docClient.put(params).promise();
         return {
             statusCode: 200,
             body: JSON.stringify({
-                message: `News of "${params.Item.title}" on the ${params.TableName} table successfully added with timestamp ${now}.`,
-                content: params.Item.content,
+                message: `News of "${params.Item.info.title}" on the ${params.TableName} table successfully added with timestamp ${now}.`,
+                content: params.Item.info.content,
             }),
         }
     } catch(err) {
