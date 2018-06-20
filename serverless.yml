@@ -35,12 +35,18 @@ functions:
       - http:
           path: telemetry
           method: get
-  addtable:
+  tableadd:
     handler: dynamodb-tableadd.handler
     events:
       - http:
           path: tableadd
           method: get
+  tabledataadd:
+    handler: dynamodb-tabledataadd.handler
+    events:
+      - http:
+          path: tabledataadd
+          method: get        
   flusha:
     handler: flusha.handler
     events:
