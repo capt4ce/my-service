@@ -77,12 +77,12 @@ functions:
       - http:
           path: pullnodes
           method: get  
-  # cache:
-  #   handler: cache-pulldata.handler
-  #   events:
-  #     - http:
-  #         path: cache
-  #         method: get  
+  stripe:
+    handler: payment_stripe.handler
+    events:
+      - http:
+          path: stripe
+          method: post
   cachepipe:
     handler: cache-pulldata-pipeline.handler
     events:
