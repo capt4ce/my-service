@@ -6,6 +6,7 @@
   "dependencies": {
     "aws-sdk": "^2.259.1",
     "braintree": "^2.11.0",
+    "dotenv": "^6.0.0",
     "ioredis": "^3.2.2",
     "redis": "^2.8.0",
     "serverless-offline": "^3.25.1",

@@ -7,16 +7,48 @@
     <button id="submit-button">Request payment method</button>
     <script>
       var button = document.querySelector('#submit-button');
-  
-      braintree.dropin.create({
-        authorization: 'CLIENT_TOKEN_FROM_SERVER',
-        container: '#dropin-container'
-      }, function (createErr, instance) {
-        button.addEventListener('click', function () {
-          instance.requestPaymentMethod(function (err, payload) {
-            // Submit payload.nonce to your server
+
+      fetch('http://localhost:3000/btClientToken', {
+        method: 'post'
+      }).then(function(response) {
+        if (response.status !== 200) {
+          console.log('Looks like there was a problem. Status Code: ' +
+            response.status);
+          return;
+        }
+
+        // Examine the text in the response
+        return response.json();
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      }).then(function(data) {
+        console.log('data:', data);
+
+        braintree.dropin.create({
+          authorization: data.clientToken,
+          container: '#dropin-container'
+        }, function (createErr, instance) {
+          button.addEventListener('click', function () {
+            instance.requestPaymentMethod(function (err, payload) {
+              console.log('payload:', payload);
+              // Submit payload.nonce to your server
+              fetch('http://localhost:3000/btCheckout', {
+                method: 'post',
+                body: JSON.stringify(payload)
+              }).then(function(response) {
+                if (response.status !== 200) {
+                  console.log('Looks like there was a problem. Status Code: ' +
+                    response.status);
+                  throw new Error()
+                }
+                return response.json()
+              }).then(function(data) {
+                alert(data)
+                // TODO: Redirect user to success page
+              });
+            });
           });
         });
-      });
+      });     
     </script>
   </body>

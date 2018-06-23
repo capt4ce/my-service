@@ -88,7 +88,26 @@ functions:
     events:
       - http:
           path: cachepipe
-          method: get  
+          method: get
+  btClientToken:
+    handler: generateClientToken.handler
+    events:
+      - http:
+          path: btClientToken
+          method: get
+      - http:
+          path: btClientToken
+          method: post
+  btCheckout:
+    handler: checkout.handler
+    events:
+      - http:
+          path: btCheckout
+          method: get
+      - http:
+          path: btCheckout
+          method: post
+  
   # pull:
   #   handler: pullvalue.handler
   #   events:
