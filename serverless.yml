@@ -95,16 +95,10 @@ functions:
     events:
       - http:
           path: btClientToken
-          method: get
-      - http:
-          path: btClientToken
           method: post
   btCheckout:
-    handler: checkout.handler
+    handler: payment_braintree_checkout.handler
     events:
-      - http:
-          path: btCheckout
-          method: get
       - http:
           path: btCheckout
           method: post
