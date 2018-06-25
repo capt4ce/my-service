@@ -1,0 +1,53 @@
+<head>
+  <meta charset="utf-8">
+  <script src="https://js.braintreegateway.com/web/dropin/1.11.0/js/dropin.min.js"></script>
+</head>
+<body>
+  <div id="dropin-container"></div>
+  <button id="submit-button">Request payment method</button>
+  <script>
+    var button = document.querySelector('#submit-button');
+    // step 1
+    fetch('http://localhost:3000/btClientToken', {
+      method: 'post'
+    }).then(function(response) { 
+      if (response.status !== 200) {
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
+        return response;
+      }
+      // Examine the text in the response
+      return response.json(); // step 2
+    }).catch(function(err) {
+      console.log('Fetch Error :-S', err);
+    }).then(function(data) {
+      console.log('data:', data);
+      // data sudah dapet, minta nonce ke server
+      braintree.dropin.create({
+        authorization: data.clientToken,
+        container: '#dropin-container'
+      }).then(function(instance) {
+        button.addEventListener('click',() => {
+          instance.requestPaymentMethod().then((payload) => {
+              console.log('payload:', payload);
+              // Submit payload.nonce to your server
+              fetch('http://localhost:3000/btCheckout', {
+                method: 'post',
+                body: JSON.stringify(payload)
+              }).then(function(response) {
+                if (response.status !== 200) {
+                  console.log('Looks like there was a problem. Status Code: ' +
+                    response.status);
+                  throw new Error()
+                }
+                return response.json()
+              }).then(function(data) {
+                alert(data)
+                // TODO: Redirect user to success page
+              });
+            })
+        })
+      })
+    });     
+  </script>
+</body>

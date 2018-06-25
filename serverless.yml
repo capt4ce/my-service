@@ -19,6 +19,7 @@ service: my-service
 
 plugins:
   - serverless-offline
+  - serverless-static 
 
 provider:
   name: aws
@@ -90,7 +91,7 @@ functions:
           path: cachepipe
           method: get
   btClientToken:
-    handler: generateClientToken.handler
+    handler: payment_braintree_createToken.handler
     events:
       - http:
           path: btClientToken
@@ -107,6 +108,11 @@ functions:
       - http:
           path: btCheckout
           method: post
+
+custom:
+  static:
+    path: ./public # select the folder you want to serve
+    port: 8000 # select a specific port 
   
   # pull:
   #   handler: pullvalue.handler

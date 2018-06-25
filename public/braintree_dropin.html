@@ -7,7 +7,6 @@
     <button id="submit-button">Request payment method</button>
     <script>
       var button = document.querySelector('#submit-button');
-
       fetch('http://localhost:3000/btClientToken', {
         method: 'post'
       }).then(function(response) {
@@ -16,20 +15,17 @@
             response.status);
           return;
         }
-
         // Examine the text in the response
         return response.json();
-      }).catch(function(err) {
-        console.log('Fetch Error :-S', err);
-      }).then(function(data) {
-        console.log('data:', data);
+      }).then(function(value) {
+        console.log('data:', value);
 
         braintree.dropin.create({
-          authorization: data.clientToken,
+          authorization: value.clientToken,
           container: '#dropin-container'
         }, function (createErr, instance) {
-          button.addEventListener('click', function () {
-            instance.requestPaymentMethod(function (err, payload) {
+          button.addEventListener('click', function clickCallback() {
+            instance.requestPaymentMethod(function paymentMethodCallback(err, payload) {
               console.log('payload:', payload);
               // Submit payload.nonce to your server
               fetch('http://localhost:3000/btCheckout', {

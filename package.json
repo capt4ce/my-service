@@ -12,7 +12,9 @@
     "serverless-offline": "^3.25.1",
     "stripe": "^6.1.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "serverless-static": "^1.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

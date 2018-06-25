@@ -1,5 +1,7 @@
 'use strict'
 
+const gateway = require('./lib/gateway.js');
+
 exports.handler = async (event, context) => {
   console.log(event)
 
