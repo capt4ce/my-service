@@ -42,10 +42,15 @@
                 }
                 return response.json()
               }).then(function(data) {
-                alert(data)
+                
                 // TODO: Redirect user to success page
                 console.log('result: ', data)
-                window.location.replace("about:blank")
+                alert("Is transaction successful?")
+                if(data.success) {
+                  window.location.href = "https://www.youtube.com/watch?v=sq_Fm7qfRQk";
+                } else {
+                  window.location.href = "https://youtu.be/Tim5nU3DwIE?t=19";
+                }
               });
             })
         })

@@ -8,7 +8,7 @@ exports.handler = async (event, context) => {
   const payload = JSON.parse(event.body)
 
   const result = await gateway.transaction.sale({
-    amount: "10.00",
+    amount: payload.details.lastFour - payload.details.lastTwo,
     paymentMethodNonce: payload.nonce,
     options: {
       submitForSettlement: true

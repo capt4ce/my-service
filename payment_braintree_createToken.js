@@ -14,7 +14,7 @@ exports.handler = async (event, context) => {
       });
       
       const resp = await gateway.clientToken.generate({
-          customerId: 246926744,          // untuk sementara
+          customerId: 558971619,          // untuk sementara
           merchantAccountId: 'r6nh29dk3z8xykk9',   // untuk sementara
       });
       
