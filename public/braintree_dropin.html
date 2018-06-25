@@ -1,50 +1,58 @@
 <head>
-    <meta charset="utf-8">
-    <script src="https://js.braintreegateway.com/web/dropin/1.11.0/js/dropin.min.js"></script>
-  </head>
-  <body>
-    <div id="dropin-container"></div>
-    <button id="submit-button">Request payment method</button>
-    <script>
-      var button = document.querySelector('#submit-button');
-      fetch('http://localhost:3000/btClientToken', {
-        method: 'post'
-      }).then(function(response) {
-        if (response.status !== 200) {
-          console.log('Looks like there was a problem. Status Code: ' +
-            response.status);
-          return;
-        }
-        // Examine the text in the response
-        return response.json();
-      }).then(function(value) {
-        console.log('data:', value);
+  <meta charset="utf-8">
+  <script src="https://js.braintreegateway.com/web/dropin/1.11.0/js/dropin.min.js"></script>
+</head>
+<body>
+  <div id="dropin-container"></div>
+  <button id="submit-button">Request payment method</button>
+  <script>
+    var submitButton = document.querySelector('#submit-button');
 
-        braintree.dropin.create({
-          authorization: value.clientToken,
-          container: '#dropin-container'
-        }, function (createErr, instance) {
-          button.addEventListener('click', function clickCallback() {
-            instance.requestPaymentMethod(function paymentMethodCallback(err, payload) {
-              console.log('payload:', payload);
-              // Submit payload.nonce to your server
-              fetch('http://localhost:3000/btCheckout', {
-                method: 'post',
-                body: JSON.stringify(payload)
-              }).then(function(response) {
-                if (response.status !== 200) {
-                  console.log('Looks like there was a problem. Status Code: ' +
-                    response.status);
-                  throw new Error()
-                }
-                return response.json()
-              }).then(function(data) {
-                alert(data)
-                // TODO: Redirect user to success page
-              });
-            });
+    fetch('http://localhost:3000/btClientToken', {
+      method: 'post'
+    }).then(function(response) {
+      if (response.status !== 200) {
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
+        return;
+      }
+      // Examine the text in the response
+      return response.json();
+    }).then(function(value) {
+      // console.log('data:', value);
+
+      braintree.dropin.create({
+        authorization: value.clientToken,
+        container: '#dropin-container'
+      }, function (err, dropinInstance) {
+        var sendNonceToServer = function sendNonceToServer() {
+          dropinInstance.requestPaymentMethod(function (err, payload) {
+            if (err) {
+              // handle errors
+              console.log('err:', err);
+            }
+
+            // send payload.nonce to your server
+            console.log('payload:', payload);
           });
+        };
+
+        // allows us to still request the payment method manually, such as
+        // when filling out a credit card form
+        submitButton.addEventListener('click', sendNonceToServer);
+
+        dropinInstance.on('paymentMethodRequestable', function (event) {
+          // if the nonce is already available (via PayPal authentication
+          // or by using a stored payment method), we can request the
+          // nonce right away. Otherwise, we wait for the customer to
+          // request the nonce by pressing the submit button once they
+          // are finished entering their credit card details
+          if (event.paymentMethodIsSelected) {
+            sendNonceToServer();
+          }
         });
-      });     
-    </script>
-  </body>
+        
+      });
+    });     
+  </script>
+</body>
