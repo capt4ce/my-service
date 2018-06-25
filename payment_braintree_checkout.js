@@ -8,7 +8,7 @@ exports.handler = async (event, context) => {
   const payload = JSON.parse(event.body)
 
   const result = await gateway.transaction.sale({
-    amount: payload.details.lastFour - payload.details.lastTwo,
+    amount: Math.floor(2000 + 2000 * Math.random()), // 50-50 success/fail
     paymentMethodNonce: payload.nonce,
     options: {
       submitForSettlement: true

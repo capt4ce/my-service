@@ -25,7 +25,8 @@
       // data sudah dapet, minta nonce ke server
       braintree.dropin.create({
         authorization: data.clientToken,
-        container: '#dropin-container'
+        container: '#dropin-container',
+        paypal: null,
       }).then(function(instance) {
         button.addEventListener('click',() => {
           instance.requestPaymentMethod().then((payload) => {
