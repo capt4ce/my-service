@@ -11,7 +11,7 @@
     fetch('http://localhost:3000/btClientToken', {
       method: 'post',
       body: JSON.stringify({
-        oldCustomerID: 898463666,
+        oldCustomerID: 898463666, // the previous customer ID
       })
     }).then(function(response) { 
       if (response.status !== 200) {
