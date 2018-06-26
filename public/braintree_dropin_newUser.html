@@ -31,7 +31,8 @@
         button.addEventListener('click',() => {
           instance.requestPaymentMethod().then((payload) => {
               console.log('payload:', payload);
-              // Submit payload.nonce to your server
+              
+              // Submit payload.nonce to your server, server will try to verify card
               fetch('http://localhost:3000/btCheckout', {
                 method: 'post',
                 body: JSON.stringify(payload)
@@ -45,12 +46,16 @@
               }).then(function(data) {
                 
                 // TODO: Redirect user to success page
+                if(data && data.transaction && data.transaction.amount) {
+                  console.log(data.transaction.amount)
+                }
                 console.log('result: ', data)
-                alert("Is transaction successful?")
                 if(data.success) {
-                  window.location.href = "https://www.youtube.com/watch?v=sq_Fm7qfRQk";
+                  alert(`Transaction Success: ${data.transaction.amount}`)
+                  window.location.reload();
                 } else {
-                  window.location.href = "https://youtu.be/Tim5nU3DwIE?t=19";
+                  alert(`Transaction Failed: ${data.transaction.amount}`)
+                  window.location.reload();
                 }
               });
             })
