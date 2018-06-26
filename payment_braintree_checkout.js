@@ -10,8 +10,6 @@ const gateway = braintree.connect({
 });
 
 exports.handler = async (event, context) => {
-  console.log(event)
-
   const payload = JSON.parse(event.body)
 
   const result = await gateway.transaction.sale({
