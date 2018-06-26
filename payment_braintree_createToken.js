@@ -22,7 +22,6 @@ exports.handler = async (event, context) => {
         }
       } else {
         newCustomerCreation = await gateway.customer.create({});
-        console.log(newCustomerCreation.customer.id)
         newCustomerResult = await gateway.customer.find(newCustomerCreation.customer.id);
       }
       
