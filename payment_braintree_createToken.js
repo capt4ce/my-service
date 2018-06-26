@@ -15,8 +15,9 @@ exports.handler = async (event, context) => {
 
       let newCustomerResult, newCustomerCreation;
       if(event.body) {
-        newCustomerResult = await gateway.customer.find(JSON.parse(event.body).oldCustomerID + ""); // harus string
-        if(!newCustomerResult) {
+        try {
+          newCustomerResult = await gateway.customer.find(JSON.parse(event.body).oldCustomerID + ""); // harus string
+        } catch(err) {
           newCustomerCreation = await gateway.customer.create({});
           newCustomerResult = await gateway.customer.find(newCustomerCreation.customer.id);
         }
