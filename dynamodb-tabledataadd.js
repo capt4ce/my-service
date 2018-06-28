@@ -10,28 +10,36 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async (event, context) => {
-    const now = Date.now();
+    let now = Date.now();
     if(!event.queryStringParameters) {
         return fourhundred("No query found.");
     }
     if(!event.queryStringParameters.title || !event.queryStringParameters.content) {
         return fourhundred("Title and/or content missing.");
     }
-    const params = {
-        TableName: "News",
-        Item: {
-            "dateFloor": Math.floor(now / 850000000),
-            "dateExact": now,
-            "tag": event.queryStringParameters.tag || [],         // diharapkan keluaran array, protection available
-            "info": {
-                "title": event.queryStringParameters.title,
-                "content": event.queryStringParameters.content,
-                "image": event.queryStringParameters.image || "",  
-            }   
+    const params = (current) => {
+        return {
+            TableName: "News",
+            Item: {
+                "dateFloor": Math.floor(current / 850000000),
+                "dateExact": current,
+                "tag": event.queryStringParameters.tag || [],         // diharapkan keluaran array, protection available
+                "info": {
+                    "title": event.queryStringParameters.title,
+                    "content": event.queryStringParameters.content,
+                    "image": event.queryStringParameters.image || "",  
+                }   
+            }
         }
     }
     try {
-        await docClient.put(params).promise();
+        while(false) {  // replace this with checking whether someone is writing a news entry at this point
+            await new Promise((resolve, reject) => {
+                setTimeout(() => resolve(), 1000)
+              });
+              now = Date.now()
+        } 
+        await docClient.put(params(now)).promise();
         return {
             statusCode: 200,
             body: JSON.stringify({
