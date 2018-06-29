@@ -11,10 +11,11 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async (event, context) => {
     let now = Date.now();
-    if(!event.queryStringParameters) {
-        return fourhundred("No query found.");
+    const newsContent = JSON.parse(event.body);
+    if(!newsContent) {
+        return fourhundred("News content not found.");
     }
-    if(!event.queryStringParameters.title || !event.queryStringParameters.content) {
+    if(!newsContent.title || !newsContent.content) {
         return fourhundred("Title and/or content missing.");
     }
     const params = (current) => {
@@ -23,11 +24,11 @@ exports.handler = async (event, context) => {
             Item: {
                 "dateFloor": Math.floor(current / 850000000),
                 "dateExact": current,
-                "tag": event.queryStringParameters.tag || [],         // diharapkan keluaran array, protection available
+                "tag": newsContent.tag || [],         // diharapkan keluaran array, protection available
                 "info": {
-                    "title": event.queryStringParameters.title,
-                    "content": event.queryStringParameters.content,
-                    "image": event.queryStringParameters.image || "",  
+                    "title": newsContent.title,
+                    "content": newsContent.content,
+                    "image": newsContent.image || "",  
                 }   
             }
         }
@@ -43,8 +44,8 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 200,
             body: JSON.stringify({
-                message: `News of "${event.queryStringParameters.title}" on the ${params.TableName} table successfully added with timestamp ${now}.`,
-                content: event.queryStringParameters.content,
+                message: `News of "${newsContent.title}" on the ${params.TableName} table successfully added with timestamp ${now}.`,
+                content: newsContent.content,
             }),
         }
     } catch(err) {

@@ -41,13 +41,19 @@ functions:
     events:
       - http:
           path: tableadd
-          method: get
+          method: post
   tabledataadd:
     handler: dynamodb-tabledataadd.handler
     events:
       - http:
           path: tabledataadd
-          method: get        
+          method: post
+  tabledataquery:
+    handler: dynamodb-tabledataquery.handler
+    events:
+      - http:
+          path: tabledataquery
+          method: get
   flusha:
     handler: flusha.handler
     events:
