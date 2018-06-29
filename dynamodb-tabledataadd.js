@@ -37,7 +37,7 @@ exports.handler = async (event, context) => {
             await new Promise((resolve, reject) => {
                 setTimeout(() => resolve(), 1000)
               });
-              now = Date.now()
+              now = Date.now()  // ensure uniqueness
         } 
         await docClient.put(params(now)).promise();
         return {
