@@ -36,8 +36,8 @@ exports.handler = async (event, context) => {
         while(false) {  // replace this with checking whether someone is writing a news entry at this point
             await new Promise((resolve, reject) => {
                 setTimeout(() => resolve(), 1000)
-              });
-              now = Date.now()  // ensure uniqueness
+            });
+            now = Date.now()  // ensure uniqueness
         } 
         await docClient.put(params(now)).promise();
         return {
