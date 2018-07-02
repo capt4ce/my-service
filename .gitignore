@@ -5,4 +5,7 @@ jspm_packages
 # Serverless directories
 .serverless
 
+# unused source files
+s3*.js
+
 # https://blog.summercat.com/using-aws-lambda-and-api-gateway-as-html-form-endpoint.html
