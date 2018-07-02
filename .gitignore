@@ -6,6 +6,9 @@ jspm_packages
 .serverless
 
 # unused source files
-s3*.js
+s3-addFile_fetch.js
+s3-createBucket.js 
+s3-listBuckets.js 
+s3-listFiles.js 
 
 # https://blog.summercat.com/using-aws-lambda-and-api-gateway-as-html-form-endpoint.html

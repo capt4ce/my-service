@@ -112,7 +112,7 @@ functions:
 custom:
   static:
     path: ./public # select the folder you want to serve
-    port: 6000 # select a specific port 
+    port: 7000 # select a specific port 
   
   # pull:
   #   handler: pullvalue.handler
