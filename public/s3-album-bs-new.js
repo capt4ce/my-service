@@ -40,8 +40,12 @@ function listAlbums() {
             '</th>',
           '</tr>'
       ])];  // the start of the table
+      let albumDiv = [];
       albumList.CommonPrefixes.forEach((albumEP, index) => {
         const albumName = decodeURIComponent(albumEP.Prefix.replace('/', ''));
+        albumDiv[index] = document.createElement("div")
+        albumDiv[index].id = "album" + index;
+        document.getElementById('app').appendChild(albumDiv[index])
         htmlTemplate.push(getHtml([
           '<tr>',
             '<td>',
@@ -51,7 +55,7 @@ function listAlbums() {
             '</td>',
             '<td>',
               '<span onclick="viewAlbum(\'' + albumName + '\')">',
-                `<div id="album${index}"></div>`,
+                albumDiv[index].outerHTML,
               '</span>',
             '</td>',
             '<td>',,
@@ -61,22 +65,18 @@ function listAlbums() {
             '</td>',
           '</tr>'
         ]));
-        console.log(document.getElementById(`album${index}`));
       })
       htmlTemplate.push('</table>');
       document.getElementById('app').innerHTML = getHtml(htmlTemplate);
       albumList.CommonPrefixes.forEach((albumEP, index) => {
-        
         const albumName = decodeURIComponent(albumEP.Prefix.replace('/', ''));
         s3.listObjectsV2({Prefix: encodeURIComponent(albumName) + '//', MaxKeys: 1}, (err, photo) => {
-          console.log("started loading image")
           const middle = (err || !photo.Contents.length) ? '<p>Picture not found or unavailable.</p>' : `<img src="${this.request.httpRequest.endpoint.href + albumBucketName + '/' + encodeURIComponent(photo.Contents[0].Key)}" style="width:128px;height:128px;display:block;margin-left:auto;margin-right:auto">`;
           console.log(middle)
-          console.log(document.getElementById(`'album${index}'`))
-          document.getElementById(`'album${index}'`).innerHTML = getHtml(middle);
+          document.getElementById("album" + index).innerHTML = middle;
+          //document.getElementById(`'album${index}`).innerHTML = middle;
         });
       })
-      console.log("finished loading main page")
     }
   });
 }
