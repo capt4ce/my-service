@@ -24,6 +24,7 @@ function listAlbums() {
   s3.listObjectsV2({Delimiter: '/'}, function(err, albumList) {
     if (err) {
       document.getElementById('app').innerHTML = getHtml('<p>There was an error listing your albums. Check console for details.</p>');;
+      console.log("Error: " + err)
     } else {
       const message = albumList.CommonPrefixes.length ? '<p>Click on an album name or image preview to view it.</p>' : '<p>You do not have any albums. Please create album.</p>'
       let htmlTemplate = [getHtml([
@@ -72,9 +73,9 @@ function listAlbums() {
         const albumName = decodeURIComponent(albumEP.Prefix.replace('/', ''));
         s3.listObjectsV2({Prefix: encodeURIComponent(albumName) + '//', MaxKeys: 1}, (err, photo) => {
           const middle = (err || !photo.Contents.length) ? '<p>Picture not found or unavailable.</p>' : `<img src="${this.request.httpRequest.endpoint.href + albumBucketName + '/' + encodeURIComponent(photo.Contents[0].Key)}" style="width:128px;height:128px;display:block;margin-left:auto;margin-right:auto">`;
-          console.log(middle)
+          // console.log(middle)
           document.getElementById("album" + index).innerHTML = middle;
-          //document.getElementById(`'album${index}`).innerHTML = middle;
+          // document.getElementById(`'album${index}`).innerHTML = middle;
         });
       })
     }
