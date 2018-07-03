@@ -15,48 +15,18 @@ const s3 = new AWS.S3({
 });
 
 function listAlbums() {
-  s3.listObjectsV2({Delimiter: '/'}, function(err, data) { 
+  // get list of album object
+  // get length of album object, then, for each, create <div id=albumEntry${index}></div> within 
+  // for each of album object, get 1 photo within that album object (max keys 1)
+  // then, modify 
+  // close callback for calling the list of photo
+  // close callback for calling the list of albums
+  s3.listObjectsV2({Delimiter: '/'}, function(err, albumList) {
     if (err) {
-      return alert('There was an error listing your albums: ' + err.message);
+      document.getElementById('app').innerHTML = getHtml('<p>There was an error listing your albums. Check console for details.</p>');;
     } else {
-      
-      const albums = data.CommonPrefixes.map( (commonPrefix) => {
-        const prefix = commonPrefix.Prefix;
-        const albumName = decodeURIComponent(prefix.replace('/', ''));
-        let linkAlbumPreview = "";
-        s3.listObjectsV2( {Prefix: encodeURIComponent(albumName) + '//', MaxKeys: 1}, (err, data) => {
-          if(!err && data.Contents.length){
-            linkAlbumPreview = this.request.httpRequest.endpoint.href + albumBucketName + '/' + encodeURIComponent(data.Contents[0].key);
-            console.log(linkAlbumPreview);
-          }
-        });
-        return getHtml([
-          '<tr>',
-            '<td>',
-              '<span onclick="viewAlbum(\'' + albumName + '\')"><b>',
-                albumName,
-              '</b></span>',
-            '</td>',
-            '<td>',
-              '<span onclick="viewAlbum(\'' + albumName + '\')">',
-                '<img src="'+ linkAlbumPreview +'" style="width:128px;height:128px;display:block;margin-left:auto;margin-right:auto">',
-              '</span>',
-            '</td>',
-            '<td>',,
-              '<button onclick="deleteAlbum(\'' + albumName + '\')">',
-                'Delete this album',
-              '</button>',
-            '</td>',
-          '</tr>',
-        ]);
-      });
-
-      var message = albums.length ?
-        getHtml([
-          '<p>Click on an album name or image preview to view it.</p>',
-        ]) :
-        '<p>You do not have any albums. Please Create album.';
-      var htmlTemplate = [
+      const message = albumList.CommonPrefixes.length ? '<p>Click on an album name or image preview to view it.</p>' : '<p>You do not have any albums. Please create album.</p>'
+      let htmlTemplate = [getHtml([
         '<h2>Albums</h2>',
         message,
         '<table style="width: 100%">',
@@ -68,62 +38,48 @@ function listAlbums() {
                 'Create New Album',
               '</button>',
             '</th>',
-          '</tr>',
-          getHtml(albums),
-        '</table>',
-        
-      ]
+          '</tr>'
+      ])];  // the start of the table
+      albumList.CommonPrefixes.forEach((albumEP, index) => {
+        const albumName = decodeURIComponent(albumEP.Prefix.replace('/', ''));
+        htmlTemplate.push(getHtml([
+          '<tr>',
+            '<td>',
+              '<span onclick="viewAlbum(\'' + albumName + '\')"><b>',
+                albumName,
+              '</b></span>',
+            '</td>',
+            '<td>',
+              '<span onclick="viewAlbum(\'' + albumName + '\')">',
+                `<div id="album${index}"></div>`,
+              '</span>',
+            '</td>',
+            '<td>',,
+              '<button onclick="deleteAlbum(\'' + albumName + '\')">',
+                'Delete this album',
+            '</button>',
+            '</td>',
+          '</tr>'
+        ]));
+        console.log(document.getElementById(`album${index}`));
+      })
+      htmlTemplate.push('</table>');
       document.getElementById('app').innerHTML = getHtml(htmlTemplate);
+      albumList.CommonPrefixes.forEach((albumEP, index) => {
+        
+        const albumName = decodeURIComponent(albumEP.Prefix.replace('/', ''));
+        s3.listObjectsV2({Prefix: encodeURIComponent(albumName) + '//', MaxKeys: 1}, (err, photo) => {
+          console.log("started loading image")
+          const middle = (err || !photo.Contents.length) ? '<p>Picture not found or unavailable.</p>' : `<img src="${this.request.httpRequest.endpoint.href + albumBucketName + '/' + encodeURIComponent(photo.Contents[0].Key)}" style="width:128px;height:128px;display:block;margin-left:auto;margin-right:auto">`;
+          console.log(middle)
+          console.log(document.getElementById(`'album${index}'`))
+          document.getElementById(`'album${index}'`).innerHTML = getHtml(middle);
+        });
+      })
+      console.log("finished loading main page")
     }
   });
 }
-
-// if(!index) {
-//   // the start of the table and things
-//   const message = albums.length ? '<p>Click on an album name or image preview to view it.</p>' : '<p>You do not have any albums. Please create album.</p>'
-//   const beginning = getHtml([
-//     '<h2>Albums</h2>',
-//   message,
-//   '<table style="width: 100%">',
-//     '<tr>',
-//       '<th>Album title</th>',
-//       '<th style="width: 256px">Album preview</th>',
-//       '<th style="width: 256px">',
-//         '<button onclick="createAlbum(prompt(\'Enter Album Name:\'))">',
-//           'Create New Album',
-//         '</button>',
-//       '</th>',
-//     '</tr>'
-//   ]);
-// }
-
-// //
-
-// if(!(index + 1 - albumList.length)) {
-//   // the end of table and things
-// }
-
-// function listAlbums() {
-//   // get list of album object
-//   // get length of album object, create <div id=albumEntry${index}></div> within 
-//   // for each of album object, get 1 photo within that album object (max keys 1)
-//   // return the string connecting the album name, album picture, and the delete button
-//   // close callback for calling the list of photo
-//   // close callback for calling the list of albums
-//   s3.listObjectsV2({Delimiter: '/'}, function(err, albumList) { 
-//     if (err) {
-//       return alert('There was an error listing your albums: ' + err.message);
-//     }
-//     const albumHTMLcode = albumList.Contents.forEach((commonPrefix, index) => {
-//       let currentAlbumPrefix = encodeURIComponent(decodeURIComponent(commonPrefix.Prefix.replace('/', ''))) + '//';
-//       s3.listObjectsV2({Prefix: currentAlbumPrefix, MaxKeys: 1}, (err, photo) => {
-//         if(!err) {
-
-//         }
-//       });
-//     })
-//   });
-// }
 
 function createAlbum(albumName) {
   albumName = albumName.trim();

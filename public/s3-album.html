@@ -2,13 +2,21 @@
 <html>
   <head>
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.266.1.min.js"></script>
-    <script src="./s3-album-browserscript.js"></script>
+    <!-- <script src="./s3-album-browserscript.js"></script> -->
+    <script src="./s3-album-bs-new.js"></script>
     <script>
        function getHtml(template) {
           return template.join('\n');
        }
        listAlbums();
     </script>
+    <style>
+      table, th, td {
+        border: 1px solid black; 
+        border-collapse:collapse;
+        
+      }
+    </style>
   </head>
   <body>
     <h1>My Photo Albums App</h1>
