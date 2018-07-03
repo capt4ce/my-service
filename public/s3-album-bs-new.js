@@ -23,10 +23,11 @@ function listAlbums() {
   // close callback for calling the list of albums
   s3.listObjectsV2({Delimiter: '/'}, function(err, albumList) {
     if (err) {
-      document.getElementById('app').innerHTML = getHtml('<p>There was an error listing your albums. Check console for details.</p>');;
+      document.getElementById('app').innerHTML = getHtml('<p>There was an error listing your albums. Check console for details.</p><button onclick="reload(true)">Refresh page</button>');;
       console.log("Error: " + err)
     } else {
       const message = albumList.CommonPrefixes.length ? '<p>Click on an album name or image preview to view it.</p>' : '<p>You do not have any albums. Please create album.</p>'
+      // create the starting table
       let htmlTemplate = [getHtml([
         '<h2>Albums</h2>',
         message,
@@ -34,13 +35,15 @@ function listAlbums() {
           '<tr>',
             '<th>Album title</th>',
             '<th style="width: 256px">Album preview</th>',
-            '<th style="width: 256px">',
+            '<th style="width: 128px">',
               '<button onclick="createAlbum(prompt(\'Enter Album Name:\'))">',
                 'Create New Album',
               '</button>',
             '</th>',
           '</tr>'
-      ])];  // the start of the table
+      ])];  
+
+      // set up necessary data elements
       let albumDiv = [];
       albumList.CommonPrefixes.forEach((albumEP, index) => {
         const albumName = decodeURIComponent(albumEP.Prefix.replace('/', ''));
@@ -69,12 +72,13 @@ function listAlbums() {
       })
       htmlTemplate.push('</table>');
       document.getElementById('app').innerHTML = getHtml(htmlTemplate);
+
+      // fetch preview photos
       albumList.CommonPrefixes.forEach((albumEP, index) => {
         const albumName = decodeURIComponent(albumEP.Prefix.replace('/', ''));
         s3.listObjectsV2({Prefix: encodeURIComponent(albumName) + '//', MaxKeys: 1}, (err, photo) => {
-          const middle = (err || !photo.Contents.length) ? '<p>Picture not found or unavailable.</p>' : `<img src="${this.request.httpRequest.endpoint.href + albumBucketName + '/' + encodeURIComponent(photo.Contents[0].Key)}" style="width:128px;height:128px;display:block;margin-left:auto;margin-right:auto">`;
-          // console.log(middle)
-          document.getElementById("album" + index).innerHTML = middle;
+          const previewImage = (err || !photo.Contents.length) ? '<p>Picture not found or unavailable.</p>' : `<img src="${this.request.httpRequest.endpoint.href + albumBucketName + '/' + encodeURIComponent(photo.Contents[0].Key)}" style="width:256px;display:block;margin-left:auto;margin-right:auto">`;
+          document.getElementById("album" + index).innerHTML = previewImage;
           // document.getElementById(`'album${index}`).innerHTML = middle;
         });
       })
@@ -82,81 +86,85 @@ function listAlbums() {
   });
 }
 
-function createAlbum(albumName) {
-  albumName = albumName.trim();
-  if (!albumName) {
-    return alert('Album names must contain at least one non-space character.');
-  }
-  if (albumName.indexOf('/') !== -1) {
-    return alert('Album names cannot contain slashes.');
-  }
+function viewAlbum(albumName) {
+  s3.listObjectsV2({Prefix: encodeURIComponent(albumName) + '//'}, function(err, photoList) {
+    if(err) {
+      document.getElementById('app').innerHTML = getHtml('<p>There was an error on listing your photos in this album. Check console for details.</p><button onclick="reload(true)">Refresh page</button>');
+      console.log("Error: " + err);
+    } else {
+      const bucketURL = this.request.httpRequest.endpoint.href + albumBucketName + '/';
+      // create title, table, and table header
+      const message = photoList.Contents.length ? '<p>Click the button beside the photo to delete it.</p>' : '<p>You do not have any photos. Please upload a photo.</p>'
+      let htmlTemplate = [getHtml([
+        `<h2>Album: ${albumName}</h2>`,
+        message,
+        '<table style="width: 100%">',
+          '<tr>',
+            '<th>Photo</th>',
+            '<th style="width: 384px">',
+              '<input id="photoupload" type="file" accept="image/*">',
+              '<button id="addphoto" onclick="addPhoto(\'' + albumName +'\')">',
+                'Upload',
+              '</button>',
+            '</th>',
+          '</tr>'
+      ])];
+      // create table rows, corresponding to how many contents there is
+      photoList.Contents.forEach((photoData) => {
+        const photoKey = photoData.Key;
+        const photoLink = bucketURL + encodeURIComponent(photoKey);
+        const imageStyle = "width: 100%; margin-left: auto; margin-right: auto; display: block";
+        htmlTemplate.push(getHtml([
+          '<tr>',
+            '<td>',
+              `<a href="${photoLink}"><img src="${photoLink}" style="${imageStyle}"></a>`,
+            '</td>',
+            '<td>',
+              '<button onclick="deletePhoto(\'' + albumName + "','" + photoKey + '\')">',
+                'Delete',
+              '</button>',
+            '</td>',
+        ]))
+      })
+      htmlTemplate.push(getHtml([
+        '</table><br />',
+        '<button onclick="listAlbums()">',
+          'Back To Albums',
+        '</button>',
+      ]))
+      document.getElementById('app').innerHTML = getHtml(htmlTemplate);
+    }
+  })
+}
+
+function deleteAlbum(albumName) {
   var albumKey = encodeURIComponent(albumName) + '/';
-  s3.headObject({Key: albumKey}, function(err, data) {
-    if (!err) {
-      return alert('Album already exists.');
+  s3.listObjects({Prefix: albumKey}, function(err, data) {
+    if (err) {
+      return alert('There was an error deleting your album: ', err.message);
     }
-    if (err.code !== 'NotFound') {
-      return alert('There was an error accessing the database: ' + err.message);
-    }
-    s3.putObject({Key: albumKey}, function(err, data) {
+    var objects = data.Contents.map(function(object) {
+      return {Key: object.Key};
+    });
+    s3.deleteObjects({
+      Delete: {Objects: objects, Quiet: true}
+    }, function(err, data) {
       if (err) {
-        return alert('There was an error creating your album: ' + err.message);
+        return alert('There was an error deleting your album: ', err.message);
       }
-      alert('Successfully created album.');
-      viewAlbum(albumName);
+      alert('Successfully deleted album.');
+      listAlbums();
     });
   });
 }
 
-function viewAlbum(albumName) {
-  var albumPhotosKey = encodeURIComponent(albumName) + '//';
-  s3.listObjects({Prefix: albumPhotosKey}, function(err, data) {
+function deletePhoto(albumName, photoKey) {
+  s3.deleteObject({Key: photoKey}, function(err, data) {
     if (err) {
-      return alert('There was an error viewing your album: ' + err.message);
+      return alert('There was an error deleting your photo: ', err.message);
     }
-    // `this` references the AWS.Response instance that represents the response
-    var href = this.request.httpRequest.endpoint.href;
-    var bucketUrl = href + albumBucketName + '/';
-
-    var photos = data.Contents.map(function(photo) {
-      var photoKey = photo.Key;
-      var photoUrl = bucketUrl + encodeURIComponent(photoKey);
-      return getHtml([
-        '<span>',
-          '<div>',
-            '<img style="width:128px;height:128px;" src="' + photoUrl + '"/>',
-          '</div>',
-          '<div>',
-            '<span onclick="deletePhoto(\'' + albumName + "','" + photoKey + '\')">',
-              'X',
-            '</span>',
-            '<span>',
-              photoKey.replace(albumPhotosKey, ''),
-            '</span>',
-          '</div>',
-        '<span>',
-      ]);
-    });
-    var message = photos.length ?
-      '<p>Click on the X to delete the photo</p>' :
-      '<p>You do not have any photos in this album. Please add photos.</p>';
-    var htmlTemplate = [
-      '<h2>',
-        'Album: ' + albumName,
-      '</h2>',
-      message,
-      '<div>',
-        getHtml(photos),
-      '</div>',
-      '<input id="photoupload" type="file" accept="image/*">',
-      '<button id="addphoto" onclick="addPhoto(\'' + albumName +'\')">',
-        'Add Photo',
-      '</button>',
-      '<button onclick="listAlbums()">',
-        'Back To Albums',
-      '</button>',
-    ]
-    document.getElementById('app').innerHTML = getHtml(htmlTemplate);
+    alert('Successfully deleted photo.');
+    viewAlbum(albumName);
   });
 }
 
@@ -183,32 +191,27 @@ function addPhoto(albumName) {
   });
 }
 
-function deletePhoto(albumName, photoKey) {
-  s3.deleteObject({Key: photoKey}, function(err, data) {
-    if (err) {
-      return alert('There was an error deleting your photo: ', err.message);
-    }
-    alert('Successfully deleted photo.');
-    viewAlbum(albumName);
-  });
-}
-
-function deleteAlbum(albumName) {
+function createAlbum(albumName) {
+  albumName = albumName.trim();
+  if (!albumName) {
+    return alert('Album names must contain at least one non-space character.');
+  }
+  if (albumName.indexOf('/') !== -1) {
+    return alert('Album names cannot contain slashes.');
+  }
   var albumKey = encodeURIComponent(albumName) + '/';
-  s3.listObjects({Prefix: albumKey}, function(err, data) {
-    if (err) {
-      return alert('There was an error deleting your album: ', err.message);
+  s3.headObject({Key: albumKey}, function(err, data) {
+    if (!err) {
+      return alert('Album already exists.');
     }
-    var objects = data.Contents.map(function(object) {
-      return {Key: object.Key};
-    });
-    s3.deleteObjects({
-      Delete: {Objects: objects, Quiet: true}
-    }, function(err, data) {
+    if (err.code !== 'NotFound') {
+      return alert('There was an error accessing the database: ' + err.message);
+    }
+    s3.putObject({Key: albumKey}, function(err, data) {
       if (err) {
-        return alert('There was an error deleting your album: ', err.message);
+        return alert('There was an error creating your album: ' + err.message);
       }
-      alert('Successfully deleted album.');
+      alert('Successfully created album.');
       listAlbums();
     });
   });
