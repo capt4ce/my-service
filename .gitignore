@@ -4,6 +4,7 @@ jspm_packages
 
 # Serverless directories
 .serverless
+.env
 
 # unused source files
 s3-addFile_fetch.js

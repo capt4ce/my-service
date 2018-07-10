@@ -108,6 +108,12 @@ functions:
       - http:
           path: btCheckout
           method: post
+  wpCheckout:
+    handler: payment_worldpay_checkout.handler
+    events:
+      - http:
+          path: wpCheckout
+          method: post
 
 custom:
   static:
