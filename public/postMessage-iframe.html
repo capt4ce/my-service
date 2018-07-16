@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>IFrame Processor</title>
+  </head>
+  <body>
+    <div id="status">Not activated due to lack of trigger.</div>
+    <script>
+
+      const resultNotifier = document.getElementById('status');
+      window.addEventListener('message', responseFunction, false);
+      function responseFunction(event) {
+        if(event.origin !== "http://localhost:7000") return;
+        resultNotifier.innerHTML = `<p>Recevied call.</p>`; // tidak akan tertampil di frame.
+        const message = event.data ? JSON.parse(event.data) : null;
+        if(message && message.command && (message.command === "recalc" || message.command === "activate")) {
+          event.source.postMessage(JSON.stringify({
+            result: processExecutor()
+          }), "http://localhost:7000");
+        }
+      }
+      function processExecutor() {
+        // on real application, this part will do fetching/creating/changing/etc required by the system
+
+        // here, it calculates pi = 4 * (4* arctan(1/5) - arctan(1/239))
+        let acc = 0;
+        for(let i = 0; i < 4000000; i++) {
+            acc += 4 * ((4 * (0.2 ** (2 * i + 1)) / (2 * i + 1) - ((1 / 239) ** (2 * i + 1)) / (2 * i + 1)) * (-1) ** i);
+        }
+        // this signifies finished process
+        resultNotifier.innerHTML = `<p>Process complete.</p>`;
+        return acc;
+      }
+    </script>
+  </body>
+</html>

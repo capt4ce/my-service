@@ -119,6 +119,8 @@ custom:
   static:
     path: ./public # select the folder you want to serve
     port: 7000 # select a specific port 
+  serverless-offline:
+    port: 3000
   
   # pull:
   #   handler: pullvalue.handler
@@ -126,6 +128,7 @@ custom:
   #     - http:
   #         path: pull
   #         method: get  
+
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
 #    - Effect: "Allow"

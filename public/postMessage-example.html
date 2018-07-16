@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Post Message</title>
+  </head>
+  <body>
+    <div id="iFramePosition"></div>
+    <div id="result">Calculating...</div><br />
+    <!-- <a href="http://localhost:8000/postMessage-iframe.html" target="_blank">Open New Window</a> -->
+    <script>
+      // console.log("origin: " + location.origin)
+      const iFrame = document.createElement("iframe");
+      const iFrameContainer = document.getElementById('iFramePosition');
+      iFrame.id = "targetIframe";
+      iFrame.src = "http://localhost:8000/postMessage-iframe.html";
+      iFrameContainer.appendChild(iFrame);
+      
+      const targetResult = document.getElementById('result');
+
+      // console.log(iFrame)
+      // console.log(targetResult)
+
+      iFrame.onload = function() {
+        // console.log("activated")
+        // console.log(location.origin)
+        iFrame.contentWindow.postMessage(JSON.stringify({
+          command: "activate"
+        }), "http://localhost:8000")
+      }
+
+      function resultProcessor(event) {
+        // console.log("received event: " + event)
+        // console.log(event.origin)
+        if(event.origin !== "http://localhost:8000") return;
+        const message = event.data ? JSON.parse(event.data) : null;
+        if(message && message.result) {
+          targetResult.innerHTML = `<p>The calculation result is ${+message.result}. Will recalculate in 2 s.</p>`
+          setTimeout(() => {
+            targetResult.innerHTML = `<p>The calculation result is ${+message.result}. Will recalculate in 1 s.</p>`
+            setTimeout(() => {
+              targetResult.innerHTML = `<p>The calculation result is ${+message.result}. Recalculating...</p>`
+              setTimeout(() => {
+                iFrame.contentWindow.postMessage(JSON.stringify({
+                  command: "activate"
+                }), "http://localhost:8000")
+              }, 50)
+            }, 950)
+          }, 1000)
+        }
+      }
+      window.addEventListener('message', resultProcessor)
+    </script>
+    
+  </body>
+</html>
