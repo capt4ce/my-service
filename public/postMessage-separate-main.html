@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Post Message</title>
+  </head>
+  <body>
+    <a href="http://localhost:8000/postMessage-separate-aux.html" target="_blank">
+      <div id="hyperlink">Initiate link.</div>
+    </a>
+    <br />
+    <div id="result"></div>
+    <script>
+      const res = document.getElementById('result');
+
+      const confi = document.createElement("div");
+      const spac0 = document.createElement("br");
+      const data0 = document.createElement("div");
+      const spac1 = document.createElement("br");
+      const data1 = document.createElement("div");
+
+      confi.id = "confirmationTitle"
+      data0.id = "data0";
+      data1.id = "data1";
+
+      confi.innerText = "Connection to server not established."
+
+      res.appendChild(confi);
+      res.appendChild(spac0);
+      res.appendChild(data0);
+      res.appendChild(spac1);
+      res.appendChild(data1);
+
+      function responder(event) {
+        if(event.origin !== "http://localhost:8000") return;
+        const dataFromPage = JSON.parse(event.data);
+
+        if(dataFromPage.type === "dataRequest") {
+
+          event.source.postMessage(JSON.stringify({
+            value: Math.floor(Math.random() * 2000),
+          }), "http://localhost:8000"); 
+
+        } else if(dataFromPage.type === "solution") {
+
+          document.getElementById('hyperlink').innerText = "Re-establish page.";
+          document.getElementById('data0').innerText = +dataFromPage.randomNumber;
+          document.getElementById('data1').innerText = +dataFromPage.calcedResult;
+
+          event.source.postMessage(JSON.stringify({
+            received: true,
+          }), "http://localhost:8000"); 
+
+        } else if(dataFromPage.type === "confirmation") {
+
+          confi.innerText = "Connection to server fully established."
+          
+        }
+      }
+      window.addEventListener('message', responder);
+    </script>
+  </body>
+</html>

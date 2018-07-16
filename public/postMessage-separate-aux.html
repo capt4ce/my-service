@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Post Message</title>
+  </head>
+  <body>
+    <div id="result">
+      <!--sesuatu-->
+    </div>
+  <script>
+    function processExecutor(check = null) {
+      // on real application, this part will do fetching/creating/changing/etc required by the system
+
+      // here, it calculates e = 1/0! + 1/1! + 1/2! + ... if check is 1
+      // calculates pi = 4 * (4* arctan(1/5) - arctan(1/239)) otherwise
+      let acc0 = 0;
+      let acc1 = 1;
+      for(let i = 0; i < 4000000; i++) {
+          if(+check % 2) {
+            acc0 += 1 / acc1;
+            acc1 *= i + 1;
+          } else {
+            acc0 += 4 * ((4 * (0.2 ** (2 * i + 1)) / (2 * i + 1) - ((1 / 239) ** (2 * i + 1)) / (2 * i + 1)) * (-1) ** i);
+          }
+      }
+      // this signifies finished process
+      return acc0;
+    }
+
+    function responder(event) {
+      if(event.origin !== "http://localhost:7000") return;
+      const dataFromPage = JSON.parse(event.data);
+
+      if(dataFromPage.received) {
+
+        document.getElementById('confirmation').innerText = "Data has successfully accepted by parent page.";
+        document.getElementById('reloadButton').innerText = "Re-submit data request";
+
+      } else {
+
+        event.source.postMessage(JSON.stringify({
+          randomNumber: dataFromPage.value,
+          calcedResult: processExecutor(dataFromPage.value),
+          type: "solution"
+        }), "http://localhost:7000")
+
+      }
+    }
+
+    window.addEventListener('message', responder);
+    
+    this.onload = function() {
+      if(window.opener) {
+        window.opener.postMessage(JSON.stringify({
+          type: "confirmation"
+        }), "http://localhost:7000");
+        
+        const confirmation = document.createElement("p");
+        const reloadButton = document.createElement('button');
+
+        confirmation.id = "confirmation";
+        reloadButton.id = "reloadButton";
+
+        reloadButton.innerText = "Submit data request";
+        reloadButton.onclick = () => {
+          window.opener.postMessage(JSON.stringify({
+            type: "dataRequest"
+          }), "http://localhost:7000");
+          return false;
+        }
+
+        document.getElementById('result').appendChild(reloadButton);
+        document.getElementById('result').appendChild(confirmation);
+        
+      }
+    }
+  </script>
+  </body>
+</html>

@@ -118,9 +118,9 @@ functions:
 custom:
   static:
     path: ./public # select the folder you want to serve
-    port: 7000 # select a specific port 
+    port: 8000 # select a specific port 
   serverless-offline:
-    port: 3000
+    port: 3001
   
   # pull:
   #   handler: pullvalue.handler
